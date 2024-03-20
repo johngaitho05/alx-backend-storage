@@ -1,10 +1,8 @@
--- Check if the table already exists
-IF NOT EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'users')
-BEGIN
-    -- Create the table
-    CREATE TABLE users (
-        id INT IDENTITY(1,1) PRIMARY KEY,
-        email NVARCHAR(255) NOT NULL UNIQUE,
-        name NVARCHAR(255)
+-- Task 0
+
+-- Creates table 'users' and set the column 'id', 'email' and 'name'
+CREATE TABLE IF NOT EXISTS users (
+    id INT NOT NULL AUTO_INCREMENT UNIQUE PRIMARY KEY,
+    email VARCHAR(255) NOT NULL UNIQUE,
+    name VARCHAR(255)
     );
-END;
