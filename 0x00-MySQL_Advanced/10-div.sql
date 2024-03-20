@@ -8,12 +8,17 @@
 -- b, INT
 -- And returns a / b or 0 if b == 0
 
-CREATE FUNCTION SafeDiv (@a INT, @b INT)
-RETURNS INT
-AS
+DELIMITER |
+DROP FUNCTION IF EXISTS SafeDiv;
+CREATE FUNCTION SafeDiv (a INT, b INT)
+RETURNS FLOAT
 BEGIN
-    IF @b = 0
-        RETURN 0;
+    DECLARE result FLOAT;
+    IF b = 0 THEN
+        SET result = 0;
     ELSE
-        RETURN @a / @b;
+        SET result = a / b;
+    END IF;
+    RETURN result;
 END;
+|
