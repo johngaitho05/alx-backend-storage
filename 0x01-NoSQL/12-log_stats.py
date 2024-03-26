@@ -10,5 +10,5 @@ print('{} logs'.format(count))
 methods = ["GET", "POST", "PUT", "PATCH", "DELETE"]
 print('Methods:')
 for mtd in methods:
-    print("\tmethod {}: {}".format(mtd, collection.count_documents({'method': mtd})))
+    print("    method {}: {}".format(mtd, collection.count_documents({'method': mtd})))
 print('{} status check'.format(collection.count_documents({'method': 'GET', 'path': '/status'})))
