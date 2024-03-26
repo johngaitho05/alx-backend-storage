@@ -8,10 +8,10 @@ collection = local_client['logs']['nginx']
 
 count = collection.count_documents({})
 print('{} logs'.format(count))
-methods = ["GET", "POST", "PUT", "PATCH", "DELETE"]
+methods = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE']
 print('Methods:')
 for mtd in methods:
-    print("    method {}: {}".format(
+    print('    method {}: {}'.format(
         mtd, collection.count_documents({'method': mtd})))
 print('{} status check'.format(
     collection.count_documents({'method': 'GET', 'path': '/status'})))
