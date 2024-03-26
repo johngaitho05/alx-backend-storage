@@ -12,7 +12,7 @@ if __name__ == "__main__":
     methods = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE']
     print('Methods:')
     for mtd in methods:
-        print('    method {}: {}'.format(
+        print('\tmethod {}: {}'.format(
             mtd, collection.count_documents({'method': mtd})))
     print('{} status check'.format(
         collection.count_documents({'method': 'GET', 'path': '/status'})))
