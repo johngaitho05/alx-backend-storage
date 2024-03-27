@@ -43,4 +43,3 @@ def get_page(url: str) -> str:
     """Retrieves the content of a page"""
     response = requests.get(url)
     return response.text
-
