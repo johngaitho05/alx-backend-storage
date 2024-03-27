@@ -17,10 +17,6 @@ def cache_http_request(func: Callable) -> Callable:
         # Initialize Redis client
         redis_client = redis.Redis()
 
-        # Track the number of accesses to the URL
-        count_key = "count:{}".format(url)
-        redis_client.incr(count_key)
-
         # Retrieve cached HTML content if available
         cached_html = redis_client.get(url)
         if cached_html:
@@ -31,6 +27,9 @@ def cache_http_request(func: Callable) -> Callable:
 
         # Cache the HTML content with expiration time of 10 seconds
         redis_client.setex(url, 10, html_content)
+        # Track the number of accesses to the URL
+        count_key = "count:{}".format(url)
+        redis_client.incr(count_key)
 
         return html_content
 
