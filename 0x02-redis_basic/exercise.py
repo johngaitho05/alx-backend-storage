@@ -10,7 +10,7 @@ Types = Union[str, bytes, int, float]
 
 
 def count_calls(method: Callable) -> Callable:
-    """ Count Calls """
+    """ Count The number of times a method is called"""
 
     @wraps(method)
     def invoker(self, *args, **kwargs) -> Any:
@@ -22,6 +22,24 @@ def count_calls(method: Callable) -> Callable:
     return invoker
 
 
+def call_history(method: Callable) -> Callable:
+    """ Remembers Call History """
+
+    @wraps(method)
+    def invoker(self, *args, **kwargs) -> Any:
+        """ Invoker """
+        in_key = '{}:inputs'.format(method.__qualname__)
+        out_key = '{}:outputs'.format(method.__qualname__)
+        if isinstance(self._redis, redis.Redis):
+            self._redis.rpush(in_key, str(args))
+        output = method(self, *args, **kwargs)
+        if isinstance(self._redis, redis.Redis):
+            self._redis.rpush(out_key, output)
+        return output
+
+    return invoker
+
+
 class Cache:
     """Redis Cache"""
 
@@ -29,6 +47,7 @@ class Cache:
         self._redis = redis.Redis()
         self._redis.flushdb()
 
+    @call_history
     @count_calls
     def store(self, data: Union[str, bytes, int, float]) -> str:
         """Stores data to redis and returns the key"""
