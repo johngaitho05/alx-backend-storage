@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """ A simple caching for getting web page content """
 import functools
+import time
 from typing import Callable
 
 import redis
@@ -18,7 +19,7 @@ def cache_http_request(func: Callable) -> Callable:
         redis_client = redis.Redis()
 
         # Track the number of accesses to the URL
-        count_key = f"count:{url}"
+        count_key = "count:{}".format(url)
         redis_client.incr(count_key)
 
         # Retrieve cached HTML content if available
@@ -40,5 +41,6 @@ def cache_http_request(func: Callable) -> Callable:
 @cache_http_request
 def get_page(url: str) -> str:
     """Retrieves the content of a page"""
+    store.set('count:{}'.format(url), 0)
     response = requests.get(url)
     return response.text
