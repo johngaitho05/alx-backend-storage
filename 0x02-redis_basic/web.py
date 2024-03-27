@@ -1,46 +1,35 @@
 #!/usr/bin/env python3
-""" A simple caching for getting web page content """
-import functools
-import time
+"""Web.py"""
+
+import requests
+from functools import wraps
+from redis import Redis as R
 from typing import Callable
 
-import redis
-import requests
 
-store = redis.Redis()
+def count_url_access(method: Callable) -> Callable:
+    """count_url_access: counts
+    how many times a url is accessed"""
+    @wraps(method)
+    def wrapper(url):
+        """wrapper"""
+        cached_url = f'cached:{url}'
+        cached_data = R.get(cached_url)
+        if cached_data:
+            return cached_data.decode('utf-8')
+        count_key = f'count:{url}'
+        html_cont = method(url)
 
-
-def cache_http_request(func: Callable) -> Callable:
-    """Implements caching on a request"""
-
-    @functools.wraps(func)
-    def invoker(url):
-        # Initialize Redis client
-        redis_client = redis.Redis()
-
-        # Track the number of accesses to the URL
-        count_key = "count:{}".format(url)
-        redis_client.incr(count_key)
-
-        # Retrieve cached HTML content if available
-        cached_html = redis_client.get(url)
-        if cached_html:
-            return cached_html.decode('utf-8')
-
-        # Fetch HTML content using requests
-        html_content = func(url)
-
-        # Cache the HTML content with expiration time of 10 seconds
-        redis_client.setex(url, 10, html_content)
-
-        return html_content
-
-    return invoker
+        R.incr(count_key)
+        R.set(cached_url, html_cont)
+        R.expire(cached_url, 10)
+        return html_cont
+    return wrapper
 
 
-@cache_http_request
+@count_url_access
 def get_page(url: str) -> str:
-    """Retrieves the content of a page"""
-    store.set('count:{}'.format(url), 0)
-    response = requests.get(url)
-    return response.text
+    """get_page: returns
+    html content of a given url"""
+    resp = requests.get(url)
+    return resp.text
