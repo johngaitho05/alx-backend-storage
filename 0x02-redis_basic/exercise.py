@@ -1,12 +1,25 @@
 #!/usr/bin/env python3
 """Redis Cache class"""
-import sys
+import uuid
+from functools import wraps
+from typing import Union, Callable, Any
 
 import redis
-import uuid
-from typing import Union, Callable, Any, Optional
 
 Types = Union[str, bytes, int, float]
+
+
+def count_calls(method: Callable) -> Callable:
+    """ Count Calls """
+
+    @wraps(method)
+    def invoker(self, *args, **kwargs) -> Any:
+        """ Invokes """
+        if isinstance(self._redis, redis.Redis):
+            self._redis.incr(method.__qualname__)
+        return method(self, *args, **kwargs)
+
+    return invoker
 
 
 class Cache:
@@ -16,13 +29,14 @@ class Cache:
         self._redis = redis.Redis()
         self._redis.flushdb()
 
+    @count_calls
     def store(self, data: Union[str, bytes, int, float]) -> str:
         """Stores data to redis and returns the key"""
         key = str(uuid.uuid4())
         self._redis.set(key, data)
         return key
 
-    def get(self, key: str, fn: Callable = None)\
+    def get(self, key: str, fn: Callable = None) \
             -> Union[str, bytes, int, float]:
         """ Get """
         data = self._redis.get(key)
