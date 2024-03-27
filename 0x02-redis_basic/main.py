@@ -26,3 +26,5 @@ for value, fn in TEST_CASES.items():
 
 key = cache.store(12336)
 print(cache.get_int(key))
+key = cache.store('test123')
+print(cache.get_str(key))

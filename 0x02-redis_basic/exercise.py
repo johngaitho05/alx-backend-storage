@@ -32,11 +32,11 @@ class Cache:
         data = self._redis.get(key)
         if not data:
             return
-        return str(data.decode('utf-8'))
+        return self.get(key, lambda x: str(x.decode('utf-8')))
 
     def get_int(self, key: str) -> Union[int, None]:
         """Retrieves and converts a value to int"""
         data = self._redis.get(key)
         if not data:
             return
-        return int(data.decode('utf-8'))
+        return self.get(key, int)
