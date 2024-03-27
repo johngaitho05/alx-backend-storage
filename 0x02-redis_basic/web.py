@@ -1,46 +1,46 @@
 #!/usr/bin/env python3
-"""
-This module contains get_page function
-"""
-
-import redis
-from functools import wraps
+""" A simple caching for getting web page content """
+import functools
+import time
 from typing import Callable
 
+import redis
 import requests
-from requests import get
+
+store = redis.Redis()
 
 
-r = redis.Redis()
+def cache_http_request(func: Callable) -> Callable:
+    """Implements caching on a request"""
 
+    @functools.wraps(func)
+    def invoker(url):
+        # Initialize Redis client
+        redis_client = redis.Redis()
 
-def cache_http_request(fxn: Callable) -> Callable:
-    """
-    Decorator that caches a http request in Redis
-    """
-    @wraps(fxn)
-    def wrapper(url: str) -> str:
-        if type(url) != str:
-            return ""
+        # Track the number of accesses to the URL
+        count_key = f"count:{url}"
+        redis_client.incr(count_key)
 
-        r.incr(f"count:{url}")
-        result = r.get(f"{url}")
-        if result and type(result) == bytes:
-            return result.decode("utf-8")
+        # Retrieve cached HTML content if available
+        cached_html = redis_client.get(url)
+        if cached_html:
+            return cached_html.decode('utf-8')
 
-        result = fxn(url)
-        r.setex("{}".format(url), 10, result)
-        return result
+        # Fetch HTML content using requests
+        html_content = func(url)
 
-    return wrapper
+        # Cache the HTML content with expiration time of 10 seconds
+        redis_client.setex(url, 10, html_content)
+
+        return html_content
+
+    return invoker
 
 
 @cache_http_request
 def get_page(url: str) -> str:
-    """
-    obtain the HTML content of a particular URL and returns it
-    """
-    if type(url) != str:
-        return ""
+    """Retrieves the content of a page"""
+    response = requests.get(url)
+    return response.text
 
-    return requests.get(url).text
