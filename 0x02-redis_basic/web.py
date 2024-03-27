@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 """ A simple caching for getting web page content """
 import functools
-import time
 from typing import Callable
 
 import redis
